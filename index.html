@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الجدول الدراسي المطور</title>
+    <!-- استيراد خطوط عربية جميلة -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --text-main: #1e293b;
+            --text-light: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            padding-bottom: 30px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            padding: 15px;
+            gap: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            background-color: #f8fafc;
+            color: var(--secondary);
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background-color: #e2e8f0;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modern Table */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead {
+            background-color: #f8fafc;
+        }
+
+        th {
+            padding: 15px;
+            text-align: right; /* RTL Alignment */
+            font-weight: 700;
+            color: var(--text-main);
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        th:first-child { text-align: center; }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+            color: #334155;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+
+        /* Column Specifics */
+        .day-col {
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-align: center;
+            background-color: #f1f5f9;
+            width: 100px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .time-col {
+            direction: ltr;
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+            width: 130px;
+            text-align: center;
+        }
+
+        /* Badges & Info */
+        .course-code {
+            display: inline-block;
+            font-size: 0.8em;
+            color: #94a3b8;
+            margin-right: 5px;
+        }
+
+        .info-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+
+        .icon { opacity: 0.6; }
+
+        /* Badge Styles */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            width: fit-content;
+        }
+
+        .badge-clin { background-color: #dcfce7; color: #166534; }
+        .badge-sim { background-color: #dbeafe; color: #1e40af; }
+        .badge-theory { background-color: #f3f4f6; color: #4b5563; }
+        .badge-remote { background-color: #fef9c3; color: #854d0e; }
+
+        /* Calendar Styles */
+        .calendar-status { font-weight: 600; }
+        .holiday-row { background-color: #fef2f2 !important; }
+        .holiday-row td { color: #991b1b; border-color: #fecaca; }
+        
+        /* Print Button */
+        .print-fab {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background-color: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+            font-size: 24px;
+            z-index: 100;
+        }
+        .print-fab:hover { transform: scale(1.1); }
+
+        /* Warning text for changes */
+        .changed-highlight {
+            color: #d97706;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        @media print {
+            .tabs, .print-fab { display: none; }
+            .tab-content { display: block !important; margin: 0; padding: 0; }
+            .header { padding: 10px; }
+            .header h1 { font-size: 1.5rem; }
+            body { background-color: white; }
+            .container { box-shadow: none; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            .tab-content { page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>الجدول الدراسي - الفصل الثاني 1447هـ</h1>
+        <p>كلية التمريض - جامعة أم القرى | 2nd Year - Level 4</p>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'schedule')">الجدول الأسبوعي</button>
+        <button class="tab-btn" onclick="openTab(event, 'calendar')">التقويم الأكاديمي</button>
+    </div>
+
+    <!-- الجدول الأسبوعي -->
+    <div id="schedule" class="tab-content active">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>اليوم</th>
+                        <th>الوقت</th>
+                        <th>المقرر الدراسي</th>
+                        <th>معلومات المحاضر والقاعة</th>
+                        <th>النشاط</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- الأحد -->
+                    <tr>
+                        <td rowspan="2" class="day-col">الأحد</td>
+                        <td class="time-col">08:50 - 10:50</td>
+                        <td>
+                            <strong>تمريض النساء والتوليد</strong>
+                            <span class="course-code">NUR3409</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. ضيف الله الثبيتي</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 36-1.008</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-clin">تدريب سريري</span></td>
+                    </tr>
+                    <tr>
+                        <td class="time-col">13:50 - 14:50</td>
+                        <td>
+                            <strong>تمريض النساء والتوليد</strong>
+                            <span class="course-code">NUR3409</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. ضيف الله الثبيتي</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 36-1.008</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-sim">محاكاة سريرية</span></td>
+                    </tr>
+
+                    <!-- الاثنين -->
+                    <tr>
+                        <td rowspan="3" class="day-col">الاثنين</td>
+                        <td class="time-col">08:50 - 10:50</td>
+                        <td>
+                            <strong>تمريض رعاية البالغين 2</strong>
+                            <span class="course-code">NUR2406</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> أ. إبراهيم ابكر</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 36-1.007</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-clin">تدريب سريري</span></td>
+                    </tr>
+                    <tr>
+                        <td class="time-col">13:50 - 14:50</td>
+                        <td>
+                            <strong>تمريض رعاية البالغين 2</strong>
+                            <span class="course-code">NUR2406</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> أ. إبراهيم ابكر</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 36-1.007</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-sim">محاكاة سريرية</span></td>
+                    </tr>
+                    <tr>
+                        <td class="time-col">20:50 - 21:50</td>
+                        <td>
+                            <strong>حفظ القرآن الكريم 1</strong>
+                            <span class="course-code">QR2102</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. عصام الحربي</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: عن بعد</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-remote">نظري (عن بعد)</span></td>
+                    </tr>
+
+                    <!-- الثلاثاء -->
+                    <tr>
+                        <td rowspan="2" class="day-col">الثلاثاء</td>
+                        <td class="time-col">10:50 - 11:50</td>
+                        <td>
+                            <strong>تمريض النساء والتوليد</strong>
+                            <span class="course-code">NUR3409</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. كامليا بلجون</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 37-0.016</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-theory">نظري</span></td>
+                    </tr>
+                    <tr>
+                        <td class="time-col">16:50 - 17:50</td>
+                        <td>
+                            <strong>علم وظائف الأعضاء والأدوية 2</strong>
+                            <span class="course-code">PHD2411</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. احمد عاشور</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 37-0.016</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-theory">نظري</span></td>
+                    </tr>
+
+                    <!-- الأربعاء -->
+                    <tr>
+                        <td rowspan="2" class="day-col">الأربعاء</td>
+                        <td class="time-col">14:50 - 15:50</td>
+                        <td>
+                            <strong>تمريض رعاية البالغين 2</strong>
+                            <span class="course-code">NUR2406</span>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. بدرية الفكي</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 37-0.016</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-theory">نظري</span></td>
+                    </tr>
+                    <tr>
+                        <td class="time-col">16:00 - 18:00</td>
+                        <td>
+                            <strong>تثقيف وتعزيز صحة الأنسان</strong>
+                            <span class="course-code">NUR2201</span>
+                            <div class="changed-highlight">⚠️ موعد معدل</div>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. منى الحربي</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 37-0.016</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-theory">نظري</span></td>
+                    </tr>
+
+                    <!-- الخميس -->
+                    <tr>
+                        <td rowspan="2" class="day-col">الخميس</td>
+                        <td class="time-col">10:00 - 12:00</td>
+                        <td>
+                            <strong>نمو وتطور الانسان</strong>
+                            <span class="course-code">NUR2407</span>
+                            <div class="changed-highlight">⚠️ موعد معدل (صباحي)</div>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. دعاء عطوه</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: 37-0.016</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-theory">نظري</span></td>
+                    </tr>
+                    <tr>
+                        <td class="time-col">20:00 - 22:00</td>
+                        <td>
+                            <strong>القيم والأخلاق</strong>
+                            <span class="course-code">ICC1201</span>
+                            <div class="changed-highlight">🆕 مادة مضافة</div>
+                        </td>
+                        <td>
+                            <div class="info-cell">
+                                <div class="info-row"><span class="icon">👤</span> د. عصام الحربي</div>
+                                <div class="info-row"><span class="icon">📍</span> القاعة: عن بعد</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-remote">عن بعد</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- التقويم -->
+    <div id="calendar" class="tab-content">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الأسبوع</th>
+                        <th>التاريخ (ميلادي)</th>
+                        <th>الحالة / الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="day-col">1</td><td class="time-col">18 Jan - 22 Jan</td><td class="calendar-status">بداية الدراسة</td></tr>
+                    <tr><td class="day-col">2</td><td class="time-col">25 Jan - 29 Jan</td><td>-</td></tr>
+                    <tr><td class="day-col">3</td><td class="time-col">01 Feb - 05 Feb</td><td>-</td></tr>
+                    <tr><td class="day-col">4</td><td class="time-col">08 Feb - 12 Feb</td><td>-</td></tr>
+                    <tr><td class="day-col">5</td><td class="time-col">15 Feb - 19 Feb</td><td>-</td></tr>
+                    <tr><td class="day-col">6</td><td class="time-col">22 Feb - 26 Feb</td><td>-</td></tr>
+                    <tr><td class="day-col">7</td><td class="time-col">01 Mar - 05 Mar</td><td>-</td></tr>
+                    
+                    <!-- رمضان -->
+                    <tr class="holiday-row"><td class="day-col">8</td><td class="time-col">08 Mar - 12 Mar</td><td>🌙 إجازة رمضان (بداية)</td></tr>
+                    <tr class="holiday-row"><td class="day-col">9</td><td class="time-col">15 Mar - 19 Mar</td><td>🌙 إجازة رمضان (منتصف)</td></tr>
+                    <tr class="holiday-row"><td class="day-col">10</td><td class="time-col">22 Mar - 26 Mar</td><td>🌙 إجازة رمضان (نهاية)</td></tr>
+
+                    <tr><td class="day-col">11</td><td class="time-col">29 Mar - 02 Apr</td><td>استئناف الدراسة</td></tr>
+                    <tr><td class="day-col">12</td><td class="time-col">05 Apr - 09 Apr</td><td>-</td></tr>
+                    <tr><td class="day-col">13</td><td class="time-col">12 Apr - 16 Apr</td><td>-</td></tr>
+                    <tr><td class="day-col">14</td><td class="time-col">19 Apr - 23 Apr</td><td>-</td></tr>
+                    <tr><td class="day-col">15</td><td class="time-col">26 Apr - 30 Apr</td><td>-</td></tr>
+                    <tr><td class="day-col">16</td><td class="time-col">03 May - 07 May</td><td>-</td></tr>
+                    <tr><td class="day-col">17</td><td class="time-col">10 May - 14 May</td><td>-</td></tr>
+
+                    <!-- الحج -->
+                    <tr class="holiday-row"><td class="day-col">18</td><td class="time-col">17 May - 21 May</td><td>🐑 إجازة عيد الأضحى (بداية)</td></tr>
+                    <tr class="holiday-row"><td class="day-col">19</td><td class="time-col">24 May - 28 May</td><td>🐑 إجازة عيد الأضحى (نهاية)</td></tr>
+
+                    <tr><td class="day-col">20</td><td class="time-col">31 May - 04 Jun</td><td class="calendar-status">نهاية الفصل الدراسي</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button class="print-fab" onclick="window.print()" title="طباعة">🖨️</button>
+</div>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        setTimeout(() => document.getElementById(tabName).classList.add("active"), 10);
+        evt.currentTarget.className += " active";
+    }
+</script>
+
+</body>
+</html>
