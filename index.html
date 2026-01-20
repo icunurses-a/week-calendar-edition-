@@ -434,12 +434,210 @@
 </div>
 
 <script>
+// التبديل بين التبويبات
 function showTab(ev,id){
     document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     ev.target.classList.add('active');
 }
+
+/* ========== التذكير والتنبيه ========== */
+
+// عنصر شريط التنبيه
+const reminderBar = document.createElement('div');
+reminderBar.style.position = 'fixed';
+reminderBar.style.top = '10px';
+reminderBar.style.left = '50%';
+reminderBar.style.transform = 'translateX(-50%)';
+reminderBar.style.background = '#e1b12c';
+reminderBar.style.color = '#2c3e50';
+reminderBar.style.padding = '8px 16px';
+reminderBar.style.borderRadius = '20px';
+reminderBar.style.fontSize = '0.9em';
+reminderBar.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+reminderBar.style.zIndex = '9999';
+reminderBar.style.display = 'none';
+document.body.appendChild(reminderBar);
+
+function showBar(msg){
+    reminderBar.textContent = msg;
+    reminderBar.style.display = 'block';
+    setTimeout(() => {
+        reminderBar.style.display = 'none';
+    }, 8000);
+}
+
+(function addReminderToggle(){
+    const btn = document.createElement('button');
+    btn.textContent = '⏰ التذكير بالمحاضرات';
+    btn.style.padding = '6px 14px';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '6px';
+    btn.style.background = '#6c5ce7';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'pointer';
+    btn.style.fontSize = '0.9em';
+    btn.style.marginInlineStart = '8px';
+
+    let enabled = false;
+    let timerId = null;
+
+    btn.addEventListener('click', () => {
+        if (!enabled) {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(() => {  // [web:6][web:7]
+                    startReminder();
+                });
+            } else {
+                startReminder();
+            }
+        } else {
+            stopReminder();
+        }
+    });
+
+    function startReminder(){
+        enabled = true;
+        btn.textContent = '🔕 إيقاف التذكير';
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(checkReminders, 60000); // كل دقيقة [web:18]
+        showBar('تم تفعيل التذكير بالمحاضرات');
+    }
+
+    function stopReminder(){
+        enabled = false;
+        btn.textContent = '⏰ التذكير بالمحاضرات';
+        if (timerId) clearInterval(timerId);
+        showBar('تم إيقاف التذكير');
+    }
+
+    const topBar = document.querySelector('#schedule .top-bar');
+    if (topBar) {
+        topBar.appendChild(btn);
+    }
+
+    const reminders = [
+        {day:0, hour:7,  minute:45, title:'تمريض النساء والتوليد - محاكاة', body:'تبدأ المحاكاة الساعة 08:00'},
+        {day:1, hour:7,  minute:45, title:'تمريض رعاية البالغين 2 - محاكاة', body:'تبدأ المحاكاة الساعة 08:00'},
+        {day:1, hour:19, minute:45, title:'حفظ القرآن الكريم 1', body:'تبدأ المحاضرة الساعة 20:00'},
+        {day:2, hour:9,  minute:45, title:'تمريض النساء والتوليد - نظري', body:'تبدأ المحاضرة الساعة 10:00'},
+        {day:2, hour:19, minute:45, title:'وظائف الأعضاء المرضي والأدوية', body:'تبدأ المحاضرة الساعة 20:00'},
+        {day:3, hour:7,  minute:45, title:'تمريض رعاية البالغين 2 - نظري', body:'تبدأ المحاضرة الساعة 08:00'},
+        {day:3, hour:15, minute:45, title:'تثقيف وتعزيز صحة الإنسان', body:'تبدأ المحاضرة الساعة 16:00'},
+        {day:4, hour:9,  minute:45, title:'نمو وتطور الإنسان', body:'تبدأ المحاضرة الساعة 10:00'},
+        {day:4, hour:19, minute:45, title:'القيم والأخلاق', body:'تبدأ المحاضرة الساعة 20:00'}
+    ];
+
+    let lastPingKey = null;
+
+    function checkReminders(){
+        const now = new Date();
+        const jsDay = now.getDay();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+
+        reminders.forEach(rem => {
+            if (rem.day === jsDay && rem.hour === hour && rem.minute === minute) {
+                const key = `${rem.day}-${hour}-${minute}`;
+                if (key === lastPingKey) return;
+                lastPingKey = key;
+                showBar(`⏰ ${rem.title} - ${rem.body}`);
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(rem.title, { body: rem.body }); // [web:6][web:7]
+                }
+            }
+        });
+    }
+})();
+
+/* ========== إضافة كل المحاضرات إلى التقويم (ICS) ========== */
+
+(function addCalendarExportButton(){
+    const btn = document.createElement('button');
+    btn.textContent = '📲 إضافة كل المحاضرات إلى التقويم';
+    btn.style.padding = '6px 10px';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '6px';
+    btn.style.background = '#00b894';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'pointer';
+    btn.style.fontSize = '0.9em';
+
+    const topBar = document.querySelector('#schedule .top-bar');
+    if (topBar) {
+        topBar.appendChild(btn);
+    }
+
+    btn.addEventListener('click', () => {
+        const icsContent = generateICS();
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'schedule_all_events.ics';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showBar('📅 تم إنشاء ملف التقويم، افتحه في الجوال لإضافة جميع المحاضرات');
+    });
+
+    function generateICS(){
+        const events = [
+            {dayOfWeek:0, startHour:8, startMinute:0, endHour:15, endMinute:0, title:'تمريض النساء والتوليد - محاكاة', description:'محاكاة سريرية - الأحد 08:00-15:00'},
+            {dayOfWeek:1, startHour:8, startMinute:0, endHour:15, endMinute:0, title:'تمريض رعاية البالغين 2 - محاكاة', description:'محاكاة سريرية - الاثنين 08:00-15:00'},
+            {dayOfWeek:1, startHour:20, startMinute:0, endHour:22, endMinute:0, title:'حفظ القرآن الكريم 1', description:'الاثنين 20:00-22:00'},
+            {dayOfWeek:2, startHour:10, startMinute:0, endHour:12, endMinute:0, title:'تمريض النساء والتوليد - نظري', description:'الثلاثاء 10:00-12:00'},
+            {dayOfWeek:2, startHour:20, startMinute:0, endHour:22, endMinute:0, title:'وظائف الأعضاء المرضي والأدوية', description:'الثلاثاء 20:00-22:00'},
+            {dayOfWeek:3, startHour:8, startMinute:0, endHour:12, endMinute:0, title:'تمريض رعاية البالغين 2 - نظري', description:'الأربعاء 08:00-12:00'},
+            {dayOfWeek:3, startHour:16, startMinute:0, endHour:18, endMinute:0, title:'تثقيف وتعزيز صحة الإنسان', description:'الأربعاء 16:00-18:00'},
+            {dayOfWeek:4, startHour:10, startMinute:0, endHour:12, endMinute:0, title:'نمو وتطور الإنسان', description:'الخميس 10:00-12:00'},
+            {dayOfWeek:4, startHour:20, startMinute:0, endHour:22, endMinute:0, title:'القيم والأخلاق', description:'الخميس 20:00-22:00'}
+        ];
+
+        const semesterStart = new Date(2026, 0, 18);
+        const totalWeeks = 20;
+
+        let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Schedule App//AR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
+
+        function pad(n){return (n<10?'0':'')+n;}
+
+        function toICSDate(d){
+            return d.getUTCFullYear() +
+                pad(d.getUTCMonth()+1) +
+                pad(d.getUTCDate()) + 'T' +
+                pad(d.getUTCHours()) +
+                pad(d.getUTCMinutes()) +
+                pad(d.getUTCSeconds()) + 'Z';
+        }
+
+        for(let w=0; w<totalWeeks; w++){
+            const weekStart = new Date(semesterStart.getTime() + w*7*24*60*60*1000);
+            events.forEach(ev => {
+                const eventDate = new Date(weekStart.getTime() + ev.dayOfWeek*24*60*60*1000);
+                const start = new Date(eventDate);
+                start.setHours(ev.startHour, ev.startMinute, 0, 0);
+                const end = new Date(eventDate);
+                end.setHours(ev.endHour, ev.endMinute, 0, 0);
+
+                const uid = 'NUR-' + w + '-' + ev.dayOfWeek + '-' + ev.startHour + '@schedule-app';
+
+                ics += 'BEGIN:VEVENT\r\n';
+                ics += 'UID:' + uid + '\r\n';
+                ics += 'DTSTAMP:' + toICSDate(new Date()) + '\r\n';
+                ics += 'DTSTART:' + toICSDate(start) + '\r\n';
+                ics += 'DTEND:' + toICSDate(end) + '\r\n';
+                ics += 'SUMMARY:' + ev.title + '\r\n';
+                ics += 'DESCRIPTION:' + ev.description + '\r\n';
+                ics += 'END:VEVENT\r\n';
+            });
+        }
+
+        ics += 'END:VCALENDAR\r\n';
+        return ics; // تعمل مع أغلب تطبيقات التقويم كـ "Add to Calendar" [web:22][web:33]
+    }
+})();
 </script>
 </body>
 </html>
