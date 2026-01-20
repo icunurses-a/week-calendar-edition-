@@ -6,16 +6,32 @@
     <title>الجدول الأسبوعي والتقويم الدراسي - الفصل الثاني 1447 هـ</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
+
+        /* ثيمات قابلة للتخصيص */
+        :root[data-theme="dark"] {
+            --bg: #121212;
+            --card: #1e272e;
+            --text: #f5f6fa;
+            --accent: #2d98da;
+        }
+        :root[data-theme="light"] {
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #34495e;
+            --accent: #2d98da;
+        }
+
         body{
             font-family:'Segoe UI',Tahoma,Arial,sans-serif;
-            background:#f0f2f5;
+            background: var(--bg);
+            color: var(--text);
             min-height:100vh;
             padding:20px;
         }
         .container{max-width:1400px;margin:0 auto}
         h1{
             text-align:center;
-            color:#34495e;
+            color:var(--text);
             margin-bottom:20px;
         }
         .tabs{
@@ -34,8 +50,8 @@
             font-weight:bold;
         }
         .tab-btn.active{
-            background:#ffffff;
-            color:#2c3e50;
+            background:var(--card);
+            color:var(--text);
             box-shadow:0 -2px 6px rgba(0,0,0,0.08);
         }
         .tab-btn:not(.active){
@@ -47,7 +63,8 @@
         }
         .tab-content{
             display:none;
-            background:#ffffff;
+            background:var(--card);
+            color:var(--text);
             border-radius:0 0 15px 15px;
             padding:18px;
             box-shadow:0 5px 20px rgba(0,0,0,0.1);
@@ -61,14 +78,16 @@
             gap:10px;
             flex-wrap:wrap;
         }
-        .print-btn{
-            padding:6px 14px;
+        .btn{
+            padding:6px 10px;
             border:none;
             border-radius:6px;
-            background:#0984e3;
-            color:#fff;
             cursor:pointer;
             font-size:.9em;
+            color:#fff;
+        }
+        .print-btn{
+            background:#0984e3;
         }
         .print-btn:hover{background:#0767b1}
         .info-box{
@@ -77,14 +96,19 @@
             padding:12px 15px;
             margin-bottom:12px;
             border-right:4px solid #2980b9;
+            color:#2c3e50;
+        }
+        [data-theme="dark"] .info-box{
+            background:#273c52;
+            border-right-color:#3498db;
+            color:#ecf0f1;
         }
         .info-box h3{
-            color:#2980b9;
             margin-bottom:6px;
             font-size:1.05em;
         }
         .info-box ul{margin-right:18px;font-size:.9em}
-        .info-box li{margin:4px 0;color:#555}
+        .info-box li{margin:4px 0;}
         .legend{
             display:flex;
             flex-wrap:wrap;
@@ -94,6 +118,10 @@
             background:#f8f9fa;
             border-radius:8px;
             font-size:.85em;
+        }
+        [data-theme="dark"] .legend{
+            background:#2f3542;
+            color:#f1f2f6;
         }
         .legend-item{display:flex;align-items:center;gap:6px}
         .legend-color{
@@ -127,12 +155,17 @@
             height:44px;
         }
         .schedule-table tr:nth-child(even){background:#f9fbfd}
+        [data-theme="dark"] .schedule-table tr:nth-child(even){background:#222f3e}
         .time-cell{
             background:#f1f2f6!important;
             font-weight:bold;
             text-align:center;
             white-space:nowrap;
             width:80px;
+        }
+        [data-theme="dark"] .time-cell{
+            background:#2f3542!important;
+            color:#f5f6fa;
         }
         .course-card{
             border-radius:6px;
@@ -167,6 +200,11 @@
             border-right:4px solid #2d98da;
             transition:transform .2s,box-shadow .2s;
         }
+        [data-theme="dark"] .week-card{
+            background:#2f3542;
+            border-right-color:#3498db;
+            color:#ecf0f1;
+        }
         .week-card:hover{
             transform:translateY(-2px);
             box-shadow:0 4px 12px rgba(0,0,0,0.08);
@@ -179,6 +217,8 @@
             background:#ebf5fb;
             border-right-color:#2980b9;
         }
+        [data-theme="dark"] .week-card.ramadan{background:#1e3929;}
+        [data-theme="dark"] .week-card.eid{background:#1e2b3a;}
         .week-number{
             font-size:1.05em;
             font-weight:bold;
@@ -188,6 +228,7 @@
         .week-card.ramadan .week-number{color:#27ae60}
         .week-card.eid .week-number{color:#2980b9}
         .week-dates{color:#555}
+        [data-theme="dark"] .week-dates{color:#dcdde1}
         .holiday-badge{
             display:inline-block;
             padding:3px 10px;
@@ -212,7 +253,7 @@
         }
         @media print{
             body{background:#fff;padding:0}
-            .tabs,.print-btn{display:none!important}
+            .tabs,.btn{display:none!important}
             .tab-content{box-shadow:none;border-radius:0;padding:0}
             .container{max-width:100%;margin:0}
         }
@@ -244,7 +285,7 @@
                     <li>الخميس: القيم والأخلاق 20:00–22:00</li>
                 </ul>
             </div>
-            <button class="print-btn" onclick="window.print()">🖨️ طباعة الجدول</button>
+            <button class="btn print-btn" onclick="window.print()">🖨️ طباعة الجدول</button>
         </div>
 
         <div class="legend">
@@ -405,7 +446,7 @@
                     <li>إجازة عيد الأضحى: الأسبوعان 18–19</li>
                 </ul>
             </div>
-            <button class="print-btn" onclick="window.print()">🖨️ طباعة التقويم</button>
+            <button class="btn print-btn" onclick="window.print()">🖨️ طباعة التقويم</button>
         </div>
 
         <div class="calendar-container">
@@ -434,6 +475,31 @@
 </div>
 
 <script>
+// تحميل تفضيلات الثيم من localStorage [web:57][web:60][web:63]
+(function initPreferences(){
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.dataset.theme = savedTheme;
+})();
+
+// زر تبديل الثيم ليلي/نهاري
+(function addThemeToggle(){
+    const btn = document.createElement('button');
+    btn.textContent = '🌓 الثيم ليلي/نهاري';
+    btn.className = 'btn';
+    btn.style.background = '#636e72';
+
+    const topBar = document.querySelector('#schedule .top-bar');
+    if (topBar) topBar.appendChild(btn);
+
+    btn.addEventListener('click', () => {
+        const current = document.documentElement.dataset.theme || 'light';
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next); // حفظ التفضيل [web:60][web:63]
+        showBar(next === 'dark' ? 'تم تفعيل الثيم الليلي' : 'تم تفعيل الثيم الفاتح');
+    });
+})();
+
 // التبديل بين التبويبات
 function showTab(ev,id){
     document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
@@ -442,9 +508,8 @@ function showTab(ev,id){
     ev.target.classList.add('active');
 }
 
-/* ========== التذكير والتنبيه ========== */
+/* ========== شريط التنبيه ========== */
 
-// عنصر شريط التنبيه
 const reminderBar = document.createElement('div');
 reminderBar.style.position = 'fixed';
 reminderBar.style.top = '10px';
@@ -468,17 +533,16 @@ function showBar(msg){
     }, 8000);
 }
 
+/* ========== التذكير بالمحاضرات (إشعارات + شريط) ========== */
+
 (function addReminderToggle(){
     const btn = document.createElement('button');
     btn.textContent = '⏰ التذكير بالمحاضرات';
-    btn.style.padding = '6px 14px';
-    btn.style.border = 'none';
-    btn.style.borderRadius = '6px';
+    btn.className = 'btn';
     btn.style.background = '#6c5ce7';
-    btn.style.color = '#fff';
-    btn.style.cursor = 'pointer';
-    btn.style.fontSize = '0.9em';
-    btn.style.marginInlineStart = '8px';
+
+    const topBar = document.querySelector('#schedule .top-bar');
+    if (topBar) topBar.appendChild(btn);
 
     let enabled = false;
     let timerId = null;
@@ -486,7 +550,7 @@ function showBar(msg){
     btn.addEventListener('click', () => {
         if (!enabled) {
             if ('Notification' in window) {
-                Notification.requestPermission().then(() => {  // [web:6][web:7]
+                Notification.requestPermission().then(() => {  // طلب الإذن [web:6][web:7]
                     startReminder();
                 });
             } else {
@@ -510,11 +574,6 @@ function showBar(msg){
         btn.textContent = '⏰ التذكير بالمحاضرات';
         if (timerId) clearInterval(timerId);
         showBar('تم إيقاف التذكير');
-    }
-
-    const topBar = document.querySelector('#schedule .top-bar');
-    if (topBar) {
-        topBar.appendChild(btn);
     }
 
     const reminders = [
@@ -556,13 +615,8 @@ function showBar(msg){
 (function addCalendarExportButton(){
     const btn = document.createElement('button');
     btn.textContent = '📲 إضافة كل المحاضرات إلى التقويم';
-    btn.style.padding = '6px 10px';
-    btn.style.border = 'none';
-    btn.style.borderRadius = '6px';
+    btn.className = 'btn';
     btn.style.background = '#00b894';
-    btn.style.color = '#fff';
-    btn.style.cursor = 'pointer';
-    btn.style.fontSize = '0.9em';
 
     const topBar = document.querySelector('#schedule .top-bar');
     if (topBar) {
@@ -635,7 +689,7 @@ function showBar(msg){
         }
 
         ics += 'END:VCALENDAR\r\n';
-        return ics; // تعمل مع أغلب تطبيقات التقويم كـ "Add to Calendar" [web:22][web:33]
+        return ics; // صيغة ICS تعمل مع معظم تطبيقات التقويم [web:22][web:33]
     }
 })();
 </script>
